@@ -2,23 +2,16 @@ package ecies
 
 import (
 	"bytes"
-	"crypto"
 	"crypto/elliptic"
-	"crypto/sha1"
-	"crypto/sha256"
-	"crypto/sha512"
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
-	"hash"
 	"math/big"
 )
 
 var (
 	secgScheme     = []int{1, 3, 132, 1}
-	shaScheme      = []int{2, 16, 840, 1, 101, 3, 4, 2}
 	ansiX962Scheme = []int{1, 2, 840, 10045}
-	x963Scheme     = []int{1, 2, 840, 63, 0}
 )
 
 var ErrInvalidPrivateKey = fmt.Errorf("ecies: invalid private key")
@@ -29,26 +22,7 @@ func doScheme(base, v []int) asn1.ObjectIdentifier {
 	return append(oidInts, v...)
 }
 
-// curve OID code taken from crypto/x509, including
-//	- oidNameCurve*
-//	- namedCurveFromOID
-//	- oidFromNamedCurve
-// RFC 5480, 2.1.1.1. Named Curve
-//
-// secp224r1 OBJECT IDENTIFIER ::= {
-//   iso(1) identified-organization(3) certicom(132) curve(0) 33 }
-//
-// secp256r1 OBJECT IDENTIFIER ::= {
-//   iso(1) member-body(2) us(840) ansi-X9-62(10045) curves(3)
-//   prime(1) 7 }
-//
-// secp384r1 OBJECT IDENTIFIER ::= {
-//   iso(1) identified-organization(3) certicom(132) curve(0) 34 }
-//
-// secp521r1 OBJECT IDENTIFIER ::= {
-//   iso(1) identified-organization(3) certicom(132) curve(0) 35 }
-//
-// NB: secp256r1 is equivalent to prime256v1
+// curve OID code taken from crypto/x509
 type secgNamedCurve asn1.ObjectIdentifier
 
 var (
@@ -56,26 +30,7 @@ var (
 	secgNamedCurveP256 = secgNamedCurve{1, 2, 840, 10045, 3, 1, 7}
 	secgNamedCurveP384 = secgNamedCurve{1, 3, 132, 0, 34}
 	secgNamedCurveP521 = secgNamedCurve{1, 3, 132, 0, 35}
-	rawCurveP224       = []byte{6, 5, 4, 3, 1, 2, 9, 4, 0, 3, 3}
-	rawCurveP256       = []byte{6, 8, 4, 2, 1, 3, 4, 7, 2, 2, 0, 6, 6, 1, 3, 1, 7}
-	rawCurveP384       = []byte{6, 5, 4, 3, 1, 2, 9, 4, 0, 3, 4}
-	rawCurveP521       = []byte{6, 5, 4, 3, 1, 2, 9, 4, 0, 3, 5}
 )
-
-func rawCurve(curve elliptic.Curve) []byte {
-	switch curve {
-	case elliptic.P224():
-		return rawCurveP224
-	case elliptic.P256():
-		return rawCurveP256
-	case elliptic.P384():
-		return rawCurveP384
-	case elliptic.P521():
-		return rawCurveP521
-	default:
-		return nil
-	}
-}
 
 func (curve secgNamedCurve) Equal(curve2 secgNamedCurve) bool {
 	if len(curve) != len(curve2) {
@@ -118,8 +73,8 @@ func oidFromNamedCurve(curve elliptic.Curve) (secgNamedCurve, bool) {
 	return nil, false
 }
 
-// asnAlgorithmIdentifier represents the ASN.1 structure of the same name. See RFC
-// 5280, section 4.1.1.2.
+// asnAlgorithmIdentifier represents the ASN.1 structure of the same name.
+// See RFC 5280, section 4.1.1.2.
 type asnAlgorithmIdentifier struct {
 	Algorithm  asn1.ObjectIdentifier
 	Parameters asn1.RawValue `asn1:"optional"`
@@ -137,109 +92,16 @@ func (a asnAlgorithmIdentifier) Cmp(b asnAlgorithmIdentifier) bool {
 	return true
 }
 
-type asnHashFunction asnAlgorithmIdentifier
-
-var (
-	oidSHA1   = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 26}
-	oidSHA224 = doScheme(shaScheme, []int{4})
-	oidSHA256 = doScheme(shaScheme, []int{1})
-	oidSHA384 = doScheme(shaScheme, []int{2})
-	oidSHA512 = doScheme(shaScheme, []int{3})
-)
-
-func hashFromOID(oid asn1.ObjectIdentifier) func() hash.Hash {
-	switch {
-	case oid.Equal(oidSHA1):
-		return sha1.New
-	case oid.Equal(oidSHA224):
-		return sha256.New224
-	case oid.Equal(oidSHA256):
-		return sha256.New
-	case oid.Equal(oidSHA384):
-		return sha512.New384
-	case oid.Equal(oidSHA512):
-		return sha512.New
-	}
-	return nil
-}
-
-func oidFromHash(hash crypto.Hash) (asn1.ObjectIdentifier, bool) {
-	switch hash {
-	case crypto.SHA1:
-		return oidSHA1, true
-	case crypto.SHA224:
-		return oidSHA224, true
-	case crypto.SHA256:
-		return oidSHA256, true
-	case crypto.SHA384:
-		return oidSHA384, true
-	case crypto.SHA512:
-		return oidSHA512, true
-	default:
-		return nil, false
-	}
-}
-
-var (
-	asnAlgoSHA1 = asnHashFunction{
-		Algorithm: oidSHA1,
-	}
-	asnAlgoSHA224 = asnHashFunction{
-		Algorithm: oidSHA224,
-	}
-	asnAlgoSHA256 = asnHashFunction{
-		Algorithm: oidSHA256,
-	}
-	asnAlgoSHA384 = asnHashFunction{
-		Algorithm: oidSHA384,
-	}
-	asnAlgoSHA512 = asnHashFunction{
-		Algorithm: oidSHA512,
-	}
-)
-
-// type ASNasnSubjectPublicKeyInfo struct {
-//
-// }
-//
-
 type asnSubjectPublicKeyInfo struct {
 	Algorithm   asn1.ObjectIdentifier
 	PublicKey   asn1.BitString
 	Supplements ecpksSupplements `asn1:"optional"`
 }
 
-type asnECPKAlgorithms struct {
-	Type asn1.ObjectIdentifier
-}
-
-var idPublicKeyType = doScheme(ansiX962Scheme, []int{2})
-var idEcPublicKey = doScheme(idPublicKeyType, []int{1})
-var idEcPublicKeySupplemented = doScheme(idPublicKeyType, []int{0})
-
-func curveToRaw(curve elliptic.Curve) (rv asn1.RawValue, ok bool) {
-	switch curve {
-	case elliptic.P224(), elliptic.P256(), elliptic.P384(), elliptic.P521():
-		raw := rawCurve(curve)
-		return asn1.RawValue{
-			Tag:       30,
-			Bytes:     raw[2:],
-			FullBytes: raw,
-		}, true
-	default:
-		return rv, false
-	}
-}
-
-func asnECPublicKeyType(curve elliptic.Curve) (algo asnAlgorithmIdentifier, ok bool) {
-	raw, ok := curveToRaw(curve)
-	if !ok {
-		return
-	} else {
-		return asnAlgorithmIdentifier{Algorithm: idEcPublicKey,
-			Parameters: raw}, true
-	}
-}
+var (
+	idPublicKeyType           = doScheme(ansiX962Scheme, []int{2})
+	idEcPublicKeySupplemented = doScheme(idPublicKeyType, []int{0})
+)
 
 type asnECPrivKeyVer int
 
@@ -252,14 +114,9 @@ type asnPrivateKey struct {
 	Public  asn1.BitString
 }
 
-var asnECDH = doScheme(secgScheme, []int{12})
-
 type asnECDHAlgorithm asnAlgorithmIdentifier
 
 var (
-	dhSinglePass_stdDH_sha1kdf = asnECDHAlgorithm{
-		Algorithm: doScheme(x963Scheme, []int{2}),
-	}
 	dhSinglePass_stdDH_sha256kdf = asnECDHAlgorithm{
 		Algorithm: doScheme(secgScheme, []int{11, 1}),
 	}
@@ -304,9 +161,6 @@ func (a asnKeyDerivationFunction) Cmp(b asnKeyDerivationFunction) bool {
 	}
 	return true
 }
-
-var eciesRecommendedParameters = doScheme(secgScheme, []int{7})
-var eciesSpecifiedParameters = doScheme(secgScheme, []int{8})
 
 type asnECIESParameters struct {
 	KDF asnKeyDerivationFunction     `asn1:"optional"`
