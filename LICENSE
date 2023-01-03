@@ -1,3 +1,4 @@
+Copyright (c) 2023 Foundries.io. All rights reserved.
 Copyright (c) 2013 Kyle Isom <kyle@tyrfingr.is>
 Copyright (c) 2012 The Go Authors. All rights reserved.
 
@@ -12,6 +13,9 @@ copyright notice, this list of conditions and the following disclaimer
 in the documentation and/or other materials provided with the
 distribution.
    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+   * Neither the name of Foundries.io nor the names of its
 contributors may be used to endorse or promote products derived from
 this software without specific prior written permission.
 
