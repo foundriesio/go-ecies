@@ -7,16 +7,19 @@ import (
 	"crypto/sha256"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 )
 
-var dumpEnc bool
+var flDump = flag.Bool("dump", false, "write encrypted test message to file")
 
-func init() {
-	flDump := flag.Bool("dump", false, "write encrypted test message to file")
-	flag.Parse()
-	dumpEnc = *flDump
+func dumpEnc(out []byte) {
+	if *flDump {
+		f, _ := os.OpenFile("test.out", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		defer f.Close()
+		_, _ = f.Write(out)
+		_, _ = f.Write([]byte("\n"))
+	}
 }
 
 // Ensure the KDF generates appropriately sized keys.
@@ -183,10 +186,7 @@ func TestMarshalPrivate(t *testing.T) {
 		fmt.Println(err.Error())
 		t.FailNow()
 	}
-
-	if dumpEnc {
-		ioutil.WriteFile("test.out", out, 0644)
-	}
+	dumpEnc(out)
 
 	prv2, err := UnmarshalPrivate(out)
 	if err != nil {
@@ -214,10 +214,7 @@ func TestPrivatePEM(t *testing.T) {
 		fmt.Println(err.Error())
 		t.FailNow()
 	}
-
-	if dumpEnc {
-		ioutil.WriteFile("test.key", out, 0644)
-	}
+	dumpEnc(out)
 
 	prv2, err := ImportPrivatePEM(out)
 	if err != nil {
@@ -243,10 +240,7 @@ func TestPublicPEM(t *testing.T) {
 		fmt.Println(err.Error())
 		t.FailNow()
 	}
-
-	if dumpEnc {
-		ioutil.WriteFile("test.pem", out, 0644)
-	}
+	dumpEnc(out)
 
 	pub2, err := ImportPublicPEM(out)
 	if err != nil {

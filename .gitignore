@@ -22,3 +22,9 @@ _testmain.go
 *.exe
 
 *~
+
+# Test files
+test.out
+
+# IDE files
+.*.swp
