@@ -266,6 +266,56 @@ func BenchmarkGenSharedKeyP256(b *testing.B) {
 	}
 }
 
+// Benchmark the encryption of 1Kb message using default P256 curve params.
+func BenchmarkEncrypt1KbP256(b *testing.B) {
+	prv, err := GenerateKey(rand.Reader, elliptic.P256(), nil)
+	if err != nil {
+		fmt.Println(err.Error())
+		b.FailNow()
+	}
+
+	message := make([]byte, 1024)
+	if _, err := rand.Read(message); err != nil {
+		fmt.Println(err.Error())
+		b.FailNow()
+	}
+	for i := 0; i < b.N; i++ {
+		_, err := Encrypt(rand.Reader, &prv.PublicKey, message, nil, nil)
+		if err != nil {
+			fmt.Println(err.Error())
+			b.FailNow()
+		}
+	}
+}
+
+// Benchmark the decryption of 1Kb message encrypted using default P256 curve params.
+func BenchmarkDecrypt1KbP256(b *testing.B) {
+	prv, err := GenerateKey(rand.Reader, elliptic.P256(), nil)
+	if err != nil {
+		fmt.Println(err.Error())
+		b.FailNow()
+	}
+
+	message := make([]byte, 1024)
+	if _, err := rand.Read(message); err != nil {
+		fmt.Println(err.Error())
+		b.FailNow()
+	}
+	ct, err := Encrypt(rand.Reader, &prv.PublicKey, message, nil, nil)
+	if err != nil {
+		fmt.Println(err.Error())
+		b.FailNow()
+	}
+
+	for i := 0; i < b.N; i++ {
+		_, err := prv.Decrypt(rand.Reader, ct, nil, nil)
+		if err != nil {
+			fmt.Println(err.Error())
+			b.FailNow()
+		}
+	}
+}
+
 // Verify that an encrypted message can be successfully decrypted.
 func TestEncryptDecrypt(t *testing.T) {
 	prv1, err := GenerateKey(rand.Reader, DefaultCurve, nil)

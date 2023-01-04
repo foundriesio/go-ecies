@@ -46,10 +46,10 @@ goos: linux
 goarch: amd64
 pkg: github.com/umbracle/ecies
 cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
-BenchmarkGenerateKeyP256
-BenchmarkGenerateKeyP256-6       61060     17358 ns/op
-BenchmarkGenSharedKeyP256
-BenchmarkGenSharedKeyP256-6      17931     67049 ns/op
+BenchmarkGenerateKeyP256      61060    17358 ns/op
+BenchmarkGenSharedKeyP256     17931    67049 ns/op
+BenchmarkEncrypt1KbP256       10000    100334 ns/op
+BenchmarkDecrypt1KbP256       14184    105888 ns/op
 ```
 
 License
