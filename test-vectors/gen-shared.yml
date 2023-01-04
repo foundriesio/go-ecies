@@ -1,0 +1,91 @@
+gen-shared-1:
+  Curve: P-256
+  Private:
+    PX: "jYhWDdaH7Zr9iO4rq2POG6SKbfFsVMB2PJEdPFDfuzG"
+    PY: "zQbZvoqBG3Cl2u8zUW2EUs0VCZNtdOWQtf0qQ3IAVEF"
+    PD: "U57HVTWsvfNbV9wH1RMC4sVqZpn0iOjCyYW2NrI8i60"
+  Public:
+    PX: "f88KZh0KZsNxK5tRdeGKkg4egN4LQv0rCUFZXnHNpxp"
+    PY: "tktovti2OuXzLUQaDce4eeVSbQDXL8dp7m5ItmmhKxP"
+  Shared: "cb42c2750ca5927e36601a04b9248d74b869abe379d828b95dd0b3c3bdd36fe8"
+gen-shared-2:
+  Curve: P-384
+  Private:
+    PX: "6ssc0FapHMcIVgGfPJN57KSLpWGVJOELWltVVgnFoIaMbImISPOZj7eTc34eHD7iF"
+    PY: "1zNFlIKm1VEDuGoWiE3zWXqeiKlnt6gRfYdNJ9mdUo0g4GrtbOnhHcbqYeLaO47fe"
+    PD: "69Cyp3UAK99Nbz06cdr9Hp5XAzWFur8Mu3fQBgn8LFwqnUOVl6ZSdhfCHQ0vNIGiF"
+  Public:
+    PX: "3WYo4y1V1WTc9W9ULuLSdpaIBMr1ZaPYbXzcgi96WgNJkG5Ot9Ob6HzUrEDTmixcJ"
+    PY: "4afRkolvuy4dx1ogr4JLsNGnt6MzhfKr9mtgYbPrQwUhgKtIPcP53Gk0OEJoG8IAL"
+  Shared: "e9592aa57f776db6bc8a44b6044d1aefd5033f011e2d9910bdc77a3c9cf3209c559bba78d2c1cecd9fdc34d12af15f25"
+gen-shared-3:
+  Curve: P-521
+  Private:
+    PX: "4otkXhylhGQsiJZAg4SKemp5RfMuy5i6JC37BzIOez3q8XxOQdJW37PLgNXgO7V6QXKakHCXVhkhao88gkyc01mU"
+    PY: "1XwZnIHwbjrHjbUt6M7eFPZnTo7itBBLYCqKJIZdonRLDWY5vxOSygBdrhhft9GPuImykO114iqFNVgbBVKgl31V"
+    PD: "4t53xd3wq3mc93JyoWKAJm8825KPngejRwYoLo5CPHBPm1MVFkWCyFUKfPRxUhphjtVRqid7EgIhEpoQrmpxF2ue"
+  Public:
+    PX: "7m8lgd26NGyPid6hZbEZb8gdMqfXHzlcD8R36evQm7AUQjAyWdXlG3bh5v9kKHX9vldrcLmnxwDvQmoHDMjll0U9"
+    PY: "5jPnrOqq069aymZ4qXVRDRA7I3CbQA9vvO75QVYg3j5D6O2evsxrTY0xGzBPUeStnlFc4HeuzBOLeBZpPUxQcWnO"
+  Shared: "01b370aeafecb0daa110191453021bb25e73e63d874d8e48a62fd60fb8683e2eea232f7cce8dc27b1792c31e8cfa10bb7df01b0f66a70521ccc6ca670d8b08fcc039"
+gen-shared-4:
+  Curve: P-256
+  Private:
+    PX: "Ipl7mgJRMQKJv9PuSUBcZvvtfKXPTyF6VKh1UWM73Tt"
+    PY: "ofiBE6WfIwdb3IzkaO1mDh0PdphY7MBKkye68ZWx6sP"
+    PD: "ASiyn3tVDhBGtNRRnDTcYO1EZVqNSyzV2EZVRbIexWp"
+  Public:
+    PX: "c0HbsBQjKJqqqgTNo5Oe0jE8C9AZeT5NgwrDV8AQViu"
+    PY: "q1ynsig6U7H704dWNLrSiwuud7Jk5J3a0Ye2gugfUXf"
+  Shared: "50dcd249e5c0b7f79764fa7c109bf16659ac6234fa1c423f954478be67fda318"
+gen-shared-5:
+  Curve: P-384
+  Private:
+    PX: "2cwuXzSvUuQt9xINT9QrJnxFGvCGnFatPpmtcn0aEpoLaJ6WSl9S6CzlbO5hvVqDl"
+    PY: "5pSIJGyZ6hdOekLYlzW48e1BNSfXZGlhVnOD4pxlflVGOhHGseeN3DzGsl9RInO7S"
+    PD: "6xIzzOorMDYF02TR5EGFW6iss7HyQSkwSiGYvtO0pD04OyNglYExIALX3awbo86jC"
+  Public:
+    PX: "394qp9fhDzQyF5OsZaYdIn0U79DIA4isrdxI3QyBVVXVWA1E7PIYtsCF2q8EsrQAH"
+    PY: "6oXmFvq98EoQRFap7hHkGrLXb9HEg26nNkgXjR2VLWwAsiElapxli6PXxOyjDqr3E"
+  Shared: "9802c287ddbab896a4789294b72091a4391418609b101df2d8b1a57ad4b4bc0796b0977c13bfa7c8f5567b70f89bb78c"
+gen-shared-6:
+  Curve: P-521
+  Private:
+    PX: "11aViklJ6ASuM4qmpRddtd4StWUGjbjvkNKN4DLzs0l1lUCdCQO0gmmgXHKnfmRZ1jCRP6DY2PLsP3uCJdgAOdri"
+    PY: "1M4SPbXO1KuK98uVLvae0DWW1zf2V5BA9dv0Q9blaeVFg4wBLCMBMm1AY5bzHxdzEcJCr852tDm6exi56xTcaN89"
+    PD: "6BgXwVoKffcbNDvvE1s5tZxeOzvJt2zjexQuqMuUq38i6xGtBgXKcGim4FwqrKUShXldV57AnILMNmjlgz46OU57"
+  Public:
+    PX: "3SHPReErny10ToCgMOUvoLbuiaVYfSKpjQzQoJWiGfZ3uoFOFK8qLXfUeGW1mU4JOEArsaqILfurBHcnDPPl8nbW"
+    PY: "1uAL4m0WpfxCZSLcZL6cRCC58AaqI4ld5N5iS2XR2172JcSqeXGYOavx1jRSAD1ucOW7ra36RNd2ZbsOHfmyTpe"
+  Shared: "019f0eec59a6009ace0b801a0a344018e0de65596e8aa1657d67622c01df5f9efe50025c03ac503baa2c8c16af6ba6af1fe067aa3dcf2e1421c7f3160d9c5999bfc7"
+
+gen-shared-zeropad-1:
+  Curve: P-256
+  Private:
+    PX: "VaceVlB626IFrybxVmwqRDM0Jh9r36oECUqhl20ZK4O"
+    PY: "yyCtx7l9EKXGMWsFo9TBd2BX4FG0uvwIsFgwJImiSYw"
+    PD: "O2SPvLcZ1qAQsdCO1fRZSUpD1QnRwxIcMG7UXeF18FX"
+  Public:
+    PX: "kxBUsKIDAq6qWM1EWGZeS2EUdCCkGcvuya88wFXZu5A"
+    PY: "qh5qZLy0yi91yrBql4mm6AwscpMg2UpTQSJF6rNsokC"
+  Shared: "0002788df6bdded4bc40c84f32a1fcf4b687e3caa6970e3abce918ecb415291f"
+gen-shared-zeropad-2:
+  Curve: P-384
+  Private:
+    PX: "3u9uHkUJk4gMvwFMolruKeaEdj6VoFfbjUGwjpW1xtQtCrKCYCefwhShVpUENahhx"
+    PY: "14PDNiiUMxgJ0TlVyWYNf5lroSTK5Mjspesrlgfj4B8cWJrRgCLGZ9NfcoDqcc4ka"
+    PD: "9PuaQuiBiAKJJlTT7RBuwtOcIRdZEW6PiqV4de4T9apc9fhmVfOr10KizvdvQjaV"
+  Public:
+    PX: "2l1awnwUyQ5KLnCd2Omgb4I3rFXTbUVqJDkeKSgsDaVM60QBdZcboCXwxm8MHDQIB"
+    PY: "6VPDiAc0YZ3a8lCsYbAq7tCL136HYBhsw1WcM8WAcChNIYnvjAJn35t84OqqMM5a1"
+  Shared: "0055886e9d9e4af4a5044ad30ddc86db2f3ea1c52586e754eac22c09965892a23cd19122baf1589d23d16f5613449a2f"
+gen-shared-zeropad-3:
+  Curve: P-521
+  Private:
+    PX: "7Kbzr763xaHs33NpzxAH6L1kUC79OOamNXwLodvSmtKliu7gmWI8RW17He7A17uCKTa8Bt7tKhpx5YFmZ7EUheKa"
+    PY: "5uJreeQqJI1uuGuLmaQEKN0NTNFqHYZIH6apvJNyul2GLRTvYOMLtZk8ET8WyJiyMyKh9z4I8mHXyefnfpxmxxHq"
+    PD: "2mwgON14cxk7KIEMQdLTydYDT668cFI5zk71jtwP1hcfKAYNG5mRKPsfwwdshujqRgwgvw7YTVPtBFpuama8FccI"
+  Public:
+    PX: "7gvz9f5wUanOkOciGt2noLc97yf3DNgxbFivK3rVU5WpCidFnirWBte8rDC3ECRZ6B9dSn2jMzCUiiWJE1CcG6sp"
+    PY: "36pFroNCpqcOcCJMaBc1yswTTyJXc1LgbMt6uj4CWHU3uqgPEDKGwBwdA2eWrXpr8C3KNK5zTwKMmZHp8Cxma8af"
+  Shared: "0003323cec7b9a126c859a56ebb176da4c6b77ed1fb8771b35f40211cc0e3e7febf688081d2ba7f67dfb2f8b6bbbc1f8ed0844ae6ee7e81fbbc21dc2098cb058a551"

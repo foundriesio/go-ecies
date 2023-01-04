@@ -5,8 +5,11 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"math/big"
 	"os"
 	"testing"
 )
@@ -20,6 +23,24 @@ func dumpEnc(out []byte) {
 		_, _ = f.Write(out)
 		_, _ = f.Write([]byte("\n"))
 	}
+}
+
+func curveFromName(name string) elliptic.Curve {
+	for curve := range paramsFromCurve {
+		if curve.Params().Name == name {
+			return curve
+		}
+	}
+	return nil
+}
+
+func bigIntToStr(i *big.Int) string {
+	return i.Text(62)
+}
+
+func strToBigInt(s string) *big.Int {
+	i, _ := new(big.Int).SetString(s, 62)
+	return i
 }
 
 // Ensure the KDF generates appropriately sized keys.
@@ -72,33 +93,123 @@ func cmpPrivate(prv1, prv2 *PrivateKey) bool {
 
 // Validate the ECDH component.
 func TestSharedKey(t *testing.T) {
-	prv1, err := GenerateKey(rand.Reader, DefaultCurve, nil)
+	for c := range paramsFromCurve {
+		testSharedKey(t, c)
+	}
+}
+
+func testSharedKey(t *testing.T, curve elliptic.Curve) {
+	name := curve.Params().Name
+	prv1, err := GenerateKey(rand.Reader, curve, nil)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(name, err.Error())
 		t.FailNow()
 	}
 
-	prv2, err := GenerateKey(rand.Reader, DefaultCurve, nil)
+	prv2, err := GenerateKey(rand.Reader, curve, nil)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(name, err.Error())
 		t.FailNow()
 	}
 
 	sk1, err := prv1.GenerateShared(&prv2.PublicKey)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(name, err.Error())
 		t.FailNow()
+	}
+
+	if *flDump {
+		dumpEnc([]byte(fmt.Sprintf(
+			`gen-shared-1:
+  Curve: %s
+  Private:
+    PX: "%s"
+    PY: "%s"
+    PD: "%s"
+  Public:
+    PX: "%s"
+    PY: "%s"
+  Shared: "%s"`,
+			name,
+			bigIntToStr(prv1.X),
+			bigIntToStr(prv1.Y),
+			bigIntToStr(prv1.D),
+			bigIntToStr(prv2.X),
+			bigIntToStr(prv2.Y),
+			hex.EncodeToString(sk1),
+		)))
 	}
 
 	sk2, err := prv2.GenerateShared(&prv1.PublicKey)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(name, err.Error())
 		t.FailNow()
 	}
 
 	if !bytes.Equal(sk1, sk2) {
-		fmt.Println(ErrBadSharedKeys.Error())
+		fmt.Println(name, ErrBadSharedKeys.Error())
 		t.FailNow()
+	}
+}
+
+func TestVectorSharedKey(t *testing.T) {
+	var testVectors map[string]struct {
+		Curve   string
+		Private struct {
+			PX string
+			PY string
+			PD string
+		}
+		Public struct {
+			PX string
+			PY string
+		}
+		Shared string
+	}
+	testData, err := os.ReadFile("test-vectors/gen-shared.json")
+	if err != nil {
+		fmt.Println(err.Error())
+		t.FailNow()
+	}
+	if err := json.Unmarshal(testData, &testVectors); err != nil {
+		fmt.Println(err.Error())
+		t.FailNow()
+	}
+
+	for name, vector := range testVectors {
+		curve := curveFromName(vector.Curve)
+		if curve == nil {
+			fmt.Println(name, ErrInvalidCurve.Error())
+			t.FailNow()
+		}
+		prv := PrivateKey{
+			PublicKey: PublicKey{
+				Curve: curve,
+				X:     strToBigInt(vector.Private.PX),
+				Y:     strToBigInt(vector.Private.PY),
+			},
+			D: strToBigInt(vector.Private.PD),
+		}
+		pub := PublicKey{
+			Curve: curve,
+			X:     strToBigInt(vector.Public.PX),
+			Y:     strToBigInt(vector.Public.PY),
+		}
+		sk, _ := hex.DecodeString(vector.Shared)
+		if prv.X == nil || prv.Y == nil || prv.D == nil || pub.X == nil || pub.Y == nil || sk == nil {
+			fmt.Println(name, "invalid BigInt in test vector")
+			t.FailNow()
+		}
+
+		skGen, err := prv.GenerateShared(&pub)
+		if err != nil {
+			fmt.Println(name, err.Error())
+			t.FailNow()
+		}
+		if !bytes.Equal(sk, skGen) {
+			fmt.Println(name, ErrBadSharedKeys.Error())
+			t.FailNow()
+		}
 	}
 }
 
