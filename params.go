@@ -1,7 +1,6 @@
 package ecies
 
-// This file contains parameters for ECIES encryption, specifying the
-// symmetric encryption and HMAC parameters.
+// Parameters for the ECIES encryption: the symmetric cipher and hash parameters.
 
 import (
 	"crypto"
@@ -14,8 +13,7 @@ import (
 	"hash"
 )
 
-// The default curve for this package is the NIST P256 curve, which
-// provides security equivalent to AES-128.
+// The default curve is the NIST P256 curve, which provides security equivalent to AES-128.
 var DefaultCurve = elliptic.P256()
 
 var (
@@ -31,12 +29,9 @@ type ECIESParams struct {
 	KeyLen    int                                // length of symmetric key
 }
 
-// Standard ECIES parameters:
-// * ECIES using AES128 and HMAC-SHA-256-16
-// * ECIES using AES256 and HMAC-SHA-256-32
-// * ECIES using AES256 and HMAC-SHA-384-48
-// * ECIES using AES256 and HMAC-SHA-512-64
-
+// Standard ECIES parameters selected according to SEC 1 sections 3.5 - 3.8.
+// They were also verified to be compatible with go-ethereum's ECIES encryption schemes.
+// Golang-to-SEC transform: P224=secp224r1, P256=secp256r1, P384=secp384r1, P521=secp521r1
 var (
 	ECIES_AES128_SHA256 = &ECIESParams{
 		Hash:      sha256.New,
@@ -73,8 +68,7 @@ func AddParamsForCurve(curve elliptic.Curve, params *ECIESParams) {
 	paramsFromCurve[curve] = params
 }
 
-// ParamsFromCurve selects parameters optimal for the selected elliptic curve.
-// Only the curves P256, P384, and P512 are supported.
+// Select parameters optimal for the given elliptic curve.
 func ParamsFromCurve(curve elliptic.Curve) (params *ECIESParams) {
 	return paramsFromCurve[curve]
 }

@@ -82,8 +82,7 @@ func GenerateKey(rand io.Reader, curve elliptic.Curve, params *ECIESParams) (prv
 	return
 }
 
-// MaxSharedKeyLength returns the maximum length of the shared key the
-// public key can produce.
+// MaxSharedKeyLength returns the maximum length of the shared key the public key can produce.
 func MaxSharedKeyLength(pub *PublicKey) int {
 	return (pub.Curve.Params().BitSize + 7) / 8
 }
@@ -130,7 +129,7 @@ func incCounter(ctr []byte) {
 	}
 }
 
-// NIST SP 800-56 Concatenation Key Derivation Function (see section 5.8.1).
+// NIST SP 800-56c Concatenation Key Derivation Function (see section 4.1).
 func concatKDF(hash hash.Hash, z, s1 []byte, kdLen int) (k []byte, err error) {
 	if s1 == nil {
 		s1 = make([]byte, 0)
@@ -158,8 +157,7 @@ func concatKDF(hash hash.Hash, z, s1 []byte, kdLen int) (k []byte, err error) {
 	return
 }
 
-// messageTag computes the MAC of a message (called the tag) as per
-// SEC 1, 3.5.
+// messageTag computes the MAC of a message (called the tag) as per SEC 1, 3.5.
 func messageTag(hash func() hash.Hash, km, msg, shared []byte) []byte {
 	mac := hmac.New(hash, km)
 	mac.Write(msg)
@@ -175,8 +173,7 @@ func generateIV(params *ECIESParams, rand io.Reader) (iv []byte, err error) {
 	return
 }
 
-// symEncrypt carries out CTR encryption using the block cipher specified in the
-// parameters.
+// symEncrypt carries out CTR encryption using the block cipher specified in the parameters.
 func symEncrypt(rand io.Reader, params *ECIESParams, key, m []byte) (ct []byte, err error) {
 	c, err := params.Cipher(key)
 	if err != nil {
@@ -195,8 +192,7 @@ func symEncrypt(rand io.Reader, params *ECIESParams, key, m []byte) (ct []byte, 
 	return
 }
 
-// symDecrypt carries out CTR decryption using the block cipher specified in
-// the parameters
+// symDecrypt carries out CTR decryption using the block cipher specified in the parameters
 func symDecrypt(rand io.Reader, params *ECIESParams, key, ct []byte) (m []byte, err error) {
 	c, err := params.Cipher(key)
 	if err != nil {
@@ -211,8 +207,7 @@ func symDecrypt(rand io.Reader, params *ECIESParams, key, ct []byte) (m []byte, 
 }
 
 // Encrypt encrypts a message using ECIES as specified in SEC 1, 5.1. If
-// the shared information parameters aren't being used, they should be
-// nil.
+// the shared information parameters aren't being used, they should be nil.
 func Encrypt(rand io.Reader, pub *PublicKey, m, s1, s2 []byte) (ct []byte, err error) {
 	params := pub.Params
 	if params == nil {
