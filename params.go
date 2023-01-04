@@ -46,14 +46,6 @@ var (
 		KeyLen:    16,
 	}
 
-	ECIES_AES256_SHA256 = &ECIESParams{
-		Hash:      sha256.New,
-		hashAlgo:  crypto.SHA256,
-		Cipher:    aes.NewCipher,
-		BlockSize: aes.BlockSize,
-		KeyLen:    32,
-	}
-
 	ECIES_AES192_SHA384 = &ECIESParams{
 		Hash:      sha512.New384,
 		hashAlgo:  crypto.SHA384,
@@ -85,19 +77,6 @@ func AddParamsForCurve(curve elliptic.Curve, params *ECIESParams) {
 // Only the curves P256, P384, and P512 are supported.
 func ParamsFromCurve(curve elliptic.Curve) (params *ECIESParams) {
 	return paramsFromCurve[curve]
-
-	/*
-		switch curve {
-		case elliptic.P256():
-			return ECIES_AES128_SHA256
-		case elliptic.P384():
-			return ECIES_AES256_SHA384
-		case elliptic.P521():
-			return ECIES_AES256_SHA512
-		default:
-			return nil
-		}
-	*/
 }
 
 // ASN.1 encode the ECIES parameters relevant to the encryption operations.
