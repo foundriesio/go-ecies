@@ -54,12 +54,12 @@ var (
 		KeyLen:    32,
 	}
 
-	ECIES_AES256_SHA384 = &ECIESParams{
+	ECIES_AES192_SHA384 = &ECIESParams{
 		Hash:      sha512.New384,
 		hashAlgo:  crypto.SHA384,
 		Cipher:    aes.NewCipher,
 		BlockSize: aes.BlockSize,
-		KeyLen:    32,
+		KeyLen:    24,
 	}
 
 	ECIES_AES256_SHA512 = &ECIESParams{
@@ -73,7 +73,7 @@ var (
 
 var paramsFromCurve = map[elliptic.Curve]*ECIESParams{
 	elliptic.P256(): ECIES_AES128_SHA256,
-	elliptic.P384(): ECIES_AES256_SHA384,
+	elliptic.P384(): ECIES_AES192_SHA384,
 	elliptic.P521(): ECIES_AES256_SHA512,
 }
 
