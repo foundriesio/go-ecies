@@ -10,6 +10,7 @@ import (
 	"flag"
 	"fmt"
 	"math/big"
+	pseudorand "math/rand"
 	"os"
 	"testing"
 )
@@ -399,40 +400,166 @@ func BenchmarkDecrypt1KbP256(b *testing.B) {
 
 // Verify that an encrypted message can be successfully decrypted.
 func TestEncryptDecrypt(t *testing.T) {
-	prv1, err := GenerateKey(rand.Reader, DefaultCurve, nil)
+	// Test a total of 10 static & random message across all curves.
+	messages := [][]byte{
+		[]byte{0},
+		[]byte("Hello, world!"),
+		[]byte("The quick brown fox jumps over the lazy dog."),
+	}
+	for i := 0; i < 7; i++ {
+		messages = append(messages, make([]byte, 10+i*15))
+		_, _ = rand.Read(messages[len(messages)-1])
+	}
+
+	i := 1
+	for c := range paramsFromCurve {
+		for _, m := range messages {
+			testEncryptDecrypt(t, c, m, i)
+			i++
+			if *flDump {
+				// Re-run the same input values with a different random seed
+				testEncryptDecrypt(t, c, m, i)
+				i++
+			}
+		}
+	}
+}
+
+func testEncryptDecrypt(t *testing.T, curve elliptic.Curve, msg []byte, idx int) {
+	name := curve.Params().Name
+	prv1, err := GenerateKey(rand.Reader, curve, nil)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(name, len(msg), err.Error())
 		t.FailNow()
 	}
 
-	prv2, err := GenerateKey(rand.Reader, DefaultCurve, nil)
+	prv2, err := GenerateKey(rand.Reader, curve, nil)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(name, len(msg), err.Error())
 		t.FailNow()
 	}
 
-	message := []byte("Hello, world.")
-	ct, err := Encrypt(rand.Reader, &prv2.PublicKey, message, nil, nil)
+	var seed int64
+	nonseReader := rand.Reader
+	if *flDump {
+		maxSeed := new(big.Int).SetInt64(1<<32 - 1)
+		bigSeed, _ := rand.Int(rand.Reader, maxSeed)
+		seed = bigSeed.Int64()
+		nonseReader = pseudorand.New(pseudorand.NewSource(seed))
+	}
+
+	ct, err := Encrypt(nonseReader, &prv2.PublicKey, msg, nil, nil)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(name, len(msg), "encrypt error", err.Error())
 		t.FailNow()
 	}
 
-	pt, err := prv2.Decrypt(rand.Reader, ct, nil, nil)
+	if *flDump {
+		dumpEnc([]byte(fmt.Sprintf(
+			`gen-encrypt-decrypt-%d:
+  Curve: %s
+  Seed: %d
+  Private:
+    PX: %s
+    PY: %s
+    PD: %s
+  Message:
+    Dec: "%s"
+    Enc: "%s"`,
+			idx,
+			name,
+			seed,
+			bigIntToStr(prv2.X),
+			bigIntToStr(prv2.Y),
+			bigIntToStr(prv2.D),
+			hex.EncodeToString(msg),
+			hex.EncodeToString(ct),
+		)))
+	}
+
+	pt, err := prv2.Decrypt(nil, ct, nil, nil)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(name, len(msg), "decrypt error", err.Error())
 		t.FailNow()
 	}
 
-	if !bytes.Equal(pt, message) {
-		fmt.Println("ecies: plaintext doesn't match message")
+	if !bytes.Equal(pt, msg) {
+		fmt.Println(name, len(msg), "ecies: plaintext doesn't match message")
 		t.FailNow()
 	}
 
-	_, err = prv1.Decrypt(rand.Reader, ct, nil, nil)
+	_, err = prv1.Decrypt(nil, ct, nil, nil)
 	if err == nil {
-		fmt.Println("ecies: encryption should not have succeeded")
+		fmt.Println(name, len(msg), "ecies: encryption should not have succeeded")
 		t.FailNow()
+	}
+}
+
+func TestVectorEncryptDecrypt(t *testing.T) {
+	var testVectors map[string]struct {
+		Curve   string
+		Seed    int64
+		Private struct {
+			PX string
+			PY string
+			PD string
+		}
+		Message struct {
+			Enc string
+			Dec string
+		}
+	}
+	testData, err := os.ReadFile("test-vectors/encrypt-decrypt.json")
+	if err != nil {
+		fmt.Println(err.Error())
+		t.FailNow()
+	}
+	if err := json.Unmarshal(testData, &testVectors); err != nil {
+		fmt.Println(err.Error())
+		t.FailNow()
+	}
+
+	for name, vector := range testVectors {
+		curve := curveFromName(vector.Curve)
+		nonseReader := pseudorand.New(pseudorand.NewSource(vector.Seed))
+		if curve == nil {
+			fmt.Println(name, ErrInvalidCurve.Error())
+			t.FailNow()
+		}
+		prv := PrivateKey{
+			PublicKey: PublicKey{
+				Curve: curve,
+				X:     strToBigInt(vector.Private.PX),
+				Y:     strToBigInt(vector.Private.PY),
+			},
+			D: strToBigInt(vector.Private.PD),
+		}
+		dec, _ := hex.DecodeString(vector.Message.Dec)
+		enc, _ := hex.DecodeString(vector.Message.Enc)
+		if prv.X == nil || prv.Y == nil || prv.D == nil || enc == nil || dec == nil {
+			fmt.Println(name, "invalid BigInt in test vector")
+			t.FailNow()
+		}
+
+		ct, err := Encrypt(nonseReader, &prv.PublicKey, dec, nil, nil)
+		if err != nil {
+			fmt.Println(name, err.Error())
+			t.FailNow()
+		}
+		if !bytes.Equal(ct, enc) {
+			fmt.Println(name, "ecies: encrypted doesn't match vector", hex.EncodeToString(ct))
+			t.FailNow()
+		}
+
+		pt, err := prv.Decrypt(nil, enc, nil, nil)
+		if err != nil {
+			fmt.Println(name, err.Error())
+			t.FailNow()
+		}
+		if !bytes.Equal(pt, dec) {
+			fmt.Println(name, "ecies: decrypted doesn't match vector", hex.EncodeToString(pt))
+			t.FailNow()
+		}
 	}
 }
 
