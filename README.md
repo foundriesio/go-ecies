@@ -15,6 +15,9 @@ projects (e.g. foundriesio/fioconfig) for the encryption of device configuration
 
 The ASN.1 support is only complete so far, as to support the listed algorithms before.
 
+The public interface allows to implement the HSM support e.g. via the integration with the
+[ThalesIgnite PKCS11 provider](github.com/ThalesIgnite/crypto11).
+
 Supported Ciphers
 =================
 A list of supported curves was selected based on NIST SP 800-186 Draft.  Thus, for example, the

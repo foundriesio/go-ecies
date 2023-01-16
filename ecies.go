@@ -44,7 +44,15 @@ func ImportECDSAPublic(pub *ecdsa.PublicKey) *PublicKey {
 	}
 }
 
+// KeyProvider is an interface to access the Private Key derivatives for decryption.
+// It allows to abstract use cases where the private key itself is not accessible e.g. HSM devices.
+type KeyProvider interface {
+	Public() *PublicKey
+	GenerateShared(pub *PublicKey) ([]byte, error)
+}
+
 // PrivateKey is a representation of an elliptic curve private key.
+// It implements the KeyProvider interface for the local in-memory key.
 type PrivateKey struct {
 	PublicKey
 	D *big.Int
@@ -80,6 +88,10 @@ func GenerateKey(rand io.Reader, curve elliptic.Curve, params *ECIESParams) (prv
 	}
 	prv.PublicKey.Params = params
 	return
+}
+
+func (prv *PrivateKey) Public() *PublicKey {
+	return &prv.PublicKey
 }
 
 // SEC 1 section 3.3.1: ECDH key agreement method used to establish secret keys for encryption.
@@ -183,7 +195,7 @@ func symEncrypt(rand io.Reader, params *ECIESParams, key, m []byte) (ct []byte, 
 }
 
 // symDecrypt carries out CTR decryption using the block cipher specified in the parameters
-func symDecrypt(rand io.Reader, params *ECIESParams, key, ct []byte) (m []byte, err error) {
+func symDecrypt(params *ECIESParams, key, ct []byte) (m []byte, err error) {
 	c, err := params.Cipher(key)
 	if err != nil {
 		return
@@ -241,15 +253,21 @@ func Encrypt(rand io.Reader, pub *PublicKey, m, s1, s2 []byte) (ct []byte, err e
 	return
 }
 
-// Decrypt decrypts an ECIES ciphertext.
+// Deprecated: backward-compatible Decrypt method
 func (prv *PrivateKey) Decrypt(rand io.Reader, c, s1, s2 []byte) (m []byte, err error) {
+	return Decrypt(prv, c, s1, s2)
+}
+
+// Decrypt decrypts an ECIES ciphertext.
+func Decrypt(prv KeyProvider, c, s1, s2 []byte) (m []byte, err error) {
 	if len(c) == 0 {
 		err = ErrInvalidMessage
 		return
 	}
-	params := prv.PublicKey.Params
+	pub := prv.Public()
+	params := pub.Params
 	if params == nil {
-		if params = ParamsFromCurve(prv.PublicKey.Curve); params == nil {
+		if params = ParamsFromCurve(pub.Curve); params == nil {
 			err = ErrUnsupportedECIESParameters
 			return
 		}
@@ -258,7 +276,7 @@ func (prv *PrivateKey) Decrypt(rand io.Reader, c, s1, s2 []byte) (m []byte, err 
 
 	var kLen, hLen, mStart, mEnd int
 	hLen = hash.Size()
-	kLen = (prv.PublicKey.Curve.Params().BitSize + 7) / 8
+	kLen = (pub.Curve.Params().BitSize + 7) / 8
 	switch c[0] {
 	case 2, 3:
 		// https://github.com/golang/go/blob/go1.19.5/src/crypto/elliptic/elliptic.go#L147
@@ -277,7 +295,7 @@ func (prv *PrivateKey) Decrypt(rand io.Reader, c, s1, s2 []byte) (m []byte, err 
 	mEnd = len(c) - hLen
 
 	R := new(PublicKey)
-	R.Curve = prv.PublicKey.Curve
+	R.Curve = pub.Curve
 	R.X, R.Y = elliptic.Unmarshal(R.Curve, c[:mStart])
 	if R.X == nil {
 		err = ErrInvalidPublicKey
@@ -310,6 +328,6 @@ func (prv *PrivateKey) Decrypt(rand io.Reader, c, s1, s2 []byte) (m []byte, err 
 		return
 	}
 
-	m, err = symDecrypt(rand, params, Ke, c[mStart:mEnd])
+	m, err = symDecrypt(params, Ke, c[mStart:mEnd])
 	return
 }
